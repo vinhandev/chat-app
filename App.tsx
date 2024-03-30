@@ -1,3 +1,5 @@
+import 'react-native-gesture-handler';
+
 import { Tamagui } from '~/providers';
 import { Home } from '~/screens';
 
