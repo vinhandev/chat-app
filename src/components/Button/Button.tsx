@@ -1,9 +1,5 @@
-import { Text, View } from 'react-native';
+import { ButtonProps, Button as TamaguiButton } from 'tamagui';
 
-export default function Button() {
-  return (
-    <View>
-      <Text>Button</Text>
-    </View>
-  );
+export default function Button(props: ButtonProps) {
+  return <TamaguiButton height={60} {...props} />;
 }
