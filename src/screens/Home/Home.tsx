@@ -1,6 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, Dimensions, TouchableOpacity } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from 'react-native-safe-area-context';
 import {
   Avatar,
   Channel,
@@ -8,12 +11,18 @@ import {
   ChannelProps,
   MessageInput,
   MessageList,
+  Skeleton,
+  useCreateThreadContext,
 } from 'stream-chat-expo';
 import { Image, ScrollView, Text, View } from 'tamagui';
 import FriendPreview from '~/components/FriendPreview/FriendPreview';
 import {
   useConnectUser,
   useCreateChannel,
+  useGetChannelInformation,
+  useGetNameForUser,
+  useGetOnlineStatusForUser,
+  useGetUid,
   useGetUserList,
   useSignOut,
 } from '~/hooks';
@@ -23,11 +32,22 @@ import { UserProps } from '~/types';
 import { LinearGradient } from 'expo-linear-gradient';
 import UnreadBadge from '~/components/UnreadBadge/UnreadBadge';
 import ActiveBadge from '~/components/ActiveBadge/ActiveBadge';
-import { Icon, IconVariantProps } from '~/components';
+import {
+  Icon,
+  IconButton,
+  IconVariantProps,
+  LastMessageStatus,
+  Touchable,
+} from '~/components';
 import { router } from 'expo-router';
-import { ChannelGetStreamProps } from '~/types/channels';
+import {
+  ChannelGetStreamProps,
+  ChannelLastMessageStatusType,
+} from '~/types/channels';
+import { AllMessageList } from '~/components/List';
+import styles from '~/styles';
 
-export const UnreadChannelList = ({
+export const OnlineChannelList = ({
   onChannelSelectChannel,
   email,
   uid,
@@ -36,106 +56,115 @@ export const UnreadChannelList = ({
   email: string;
   onChannelSelectChannel: (channel: any) => void;
 }) => {
-  const filterName = ({ channel }: ChannelProps) => {
-    return channel?.data?.name?.replace(email, '') || 'IT Support';
-  };
-
+  const getInformation = useGetChannelInformation();
   return (
     <View style={{ paddingLeft: 10 }}>
       <ChannelList
         filters={{ members: { $in: [uid ?? ''] } }}
+        options={{
+          presence: true,
+        }}
+        HeaderNetworkDownIndicator={() => null}
         additionalFlatListProps={{
+          refreshing: undefined,
+          onRefresh: undefined,
+          refreshControl: undefined,
           horizontal: true,
           showsHorizontalScrollIndicator: false,
-          onRefresh: () => {},
-          refreshing: false,
-          ItemSeparatorComponent: () => <View style={{ width: 10 }} />,
           style: { marginRight: 10 },
           contentContainerStyle: {
             paddingLeft: 10,
           },
+          snapToInterval: 75,
+          decelerationRate: 'fast',
+          snapToAlignment: 'start',
         }}
-        Preview={({ channel }: ChannelProps) => {
-          console.log('channel', channel.data);
+        EmptyStateIndicator={() => null}
+        LoadingIndicator={() => (
+          <View padding={'$4'}>
+            <ActivityIndicator size={'small'} />
+          </View>
+        )}
+        Preview={({ channel }) => {
+          const {
+            channelUid,
+            description,
+            image,
+            name,
+            online,
+            status,
+            time,
+            unReadCount,
+          } = getInformation({ channel, email, uid });
+
+          if (!online) return null;
+
           return (
             <View
               style={{
                 paddingTop: 5,
-                paddingRight: 5,
+                paddingRight: 15,
               }}
             >
-              <TouchableOpacity
-                onPress={() => onChannelSelectChannel(channel)}
-                style={{
-                  width: 50,
-                  height: undefined,
-                  aspectRatio: 1,
-                  borderRadius: 12,
-                  overflow: 'hidden',
-                }}
-              >
-                <Avatar
-                  containerStyle={{
-                    borderRadius: 12,
-                    padding: 0,
-                    margin: 0,
-                    width: 50,
-                    height: undefined,
-                    aspectRatio: 1,
-                  }}
-                  size={100}
-                  ImageComponent={(props) => (
-                    <View
-                      style={{
-                        width: '100%',
-                        height: '100%',
-                        background: 'red',
-                        overflow: 'hidden',
-                        borderRadius: 12,
-                        margin: 0,
-                        padding: 0,
-                      }}
-                    >
-                      <Image
-                        style={{
-                          width: 50,
-                          height: undefined,
-                          aspectRatio: 1,
-                          borderRadius: 12,
-                        }}
-                        source={props.source}
-                      />
-                    </View>
-                  )}
-                  image="https://picsum.photos/300"
-                  name={filterName({ channel })}
-                />
-                <LinearGradient
+              <TouchableOpacity onPress={() => onChannelSelectChannel(channel)}>
+                <View
+                  backgroundColor={'$white5'}
                   style={{
-                    flex: 1,
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    zIndex: 2,
+                    borderRadius: 12,
+                    width: 60,
+                    padding: 5,
+                    overflow: 'hidden',
+                    gap: 5,
                   }}
-                  colors={['transparent', '#000000aa']}
-                />
+                >
+                  <Avatar
+                    image={image}
+                    containerStyle={{
+                      borderRadius: 12,
+                      padding: 0,
+                      margin: 0,
+                      width: 50,
+                      height: undefined,
+                      aspectRatio: 1,
+                    }}
+                    size={100}
+                    ImageComponent={(props) => (
+                      <View
+                        style={{
+                          width: '100%',
+                          height: '100%',
+                          background: 'red',
+                          overflow: 'hidden',
+                          borderRadius: 12,
+                          margin: 0,
+                          padding: 0,
+                        }}
+                      >
+                        <Image
+                          style={{
+                            width: 50,
+                            height: undefined,
+                            aspectRatio: 1,
+                            borderRadius: 12,
+                          }}
+                          source={props.source}
+                        />
+                      </View>
+                    )}
+                    name={name}
+                  />
+                  <Text
+                    textAlign="center"
+                    fontWeight={'$7'}
+                    fontSize={'$3'}
+                    color={'$black1'}
+                    textTransform="capitalize"
+                  >
+                    {name.slice(0, 5)}
+                  </Text>
+                </View>
+                {online && <ActiveBadge isActive={online} size={15} />}
               </TouchableOpacity>
-              <View
-                style={{
-                  flex: 1,
-                  position: 'absolute',
-                  top: 0,
-                  right: 0,
-                  zIndex: 10,
-                  justifyContent: 'space-between',
-                  padding: 20,
-                }}
-              >
-                <ActiveBadge isActive={true} size={20} />
-              </View>
             </View>
           );
         }}
@@ -153,27 +182,48 @@ export const PinnedChannelList = ({
   email: string;
   onChannelSelectChannel: (channel: any) => void;
 }) => {
-  const filterName = ({ channel }: ChannelProps) => {
-    return channel?.data?.name?.replace(email, '') || 'IT Support';
-  };
+  const getInformation = useGetChannelInformation();
+
+  const pinned = useUserStore((state) => state.userMetadata?.pinned ?? []);
 
   return (
     <View style={{ paddingLeft: 10 }}>
       <ChannelList
-        filters={{ members: { $in: [uid ?? ''] } }}
+        filters={{ members: { $in: [uid] } }}
         additionalFlatListProps={{
           horizontal: true,
           showsHorizontalScrollIndicator: false,
-          onRefresh: () => {},
-          refreshing: false,
+          onRefresh: undefined,
+          refreshing: undefined,
           ItemSeparatorComponent: () => <View style={{ width: 10 }} />,
           style: { marginRight: 10 },
           contentContainerStyle: {
             paddingLeft: 10,
           },
+          refreshControl: undefined,
+          snapToInterval: Dimensions.get('window').width * 0.5 - 9,
+          snapToAlignment: 'start',
+          decelerationRate: 'fast',
         }}
+        EmptyStateIndicator={() => null}
+        LoadingIndicator={() => (
+          <View padding={'$4'}>
+            <ActivityIndicator size={'small'} />
+          </View>
+        )}
         Preview={({ channel }: ChannelProps) => {
-          console.log('channel', channel.data);
+          const {
+            channelUid,
+            description,
+            image,
+            name,
+            online,
+            status,
+            time,
+            unReadCount,
+          } = getInformation({ channel, uid, email });
+          console.log('channelUid', channelUid, pinned);
+          if (!pinned.includes(channelUid)) return null;
           return (
             <TouchableOpacity
               onPress={() => onChannelSelectChannel(channel)}
@@ -218,8 +268,8 @@ export const PinnedChannelList = ({
                     />
                   </View>
                 )}
-                image="https://picsum.photos/300"
-                name={filterName({ channel })}
+                image={image}
+                name={name}
               />
               <LinearGradient
                 style={{
@@ -231,7 +281,7 @@ export const PinnedChannelList = ({
                   bottom: 0,
                   zIndex: 2,
                 }}
-                colors={['transparent', '#000000aa']}
+                colors={['transparent', '#000000']}
               />
 
               <View
@@ -254,8 +304,12 @@ export const PinnedChannelList = ({
                     justifyContent: 'space-between',
                   }}
                 >
-                  <UnreadBadge count={1} size={30} fontSize={4} />
-                  <ActiveBadge isActive={true} size={20} />
+                  {unReadCount > 0 ? (
+                    <UnreadBadge count={unReadCount} size={30} fontSize={4} />
+                  ) : (
+                    <LastMessageStatus size={25} status={status} />
+                  )}
+                  <ActiveBadge isActive={online} size={20} />
                 </View>
                 <View>
                   <Text
@@ -265,7 +319,7 @@ export const PinnedChannelList = ({
                     fontWeight={'$7'}
                     fontSize={'$4'}
                   >
-                    {filterName({ channel })}
+                    {name}
                   </Text>
                   <Text
                     numberOfLines={1}
@@ -274,10 +328,7 @@ export const PinnedChannelList = ({
                     fontSize={'$4'}
                     fontWeight={'$3'}
                   >
-                    Hello Lorem ipsum dolor sit amet consectetur adipisicing
-                    elit. Ea sint saepe, dolorem ducimus cumque cum tenetur
-                    vitae illum est optio repudiandae alias magni odit,
-                    exercitationem quisquam laudantium nemo veniam deserunt.
+                    {description}
                   </Text>
                 </View>
               </View>
@@ -290,52 +341,6 @@ export const PinnedChannelList = ({
   );
 };
 
-export const FriendChannelList = ({
-  onGoBack,
-  onChannelSelectChannel,
-  email,
-  uid,
-}: {
-  uid: string;
-  email: string;
-  onGoBack: () => void;
-  onChannelSelectChannel: (channel: any) => void;
-}) => {
-  const filterName = ({ channel }: ChannelProps) => {
-    return channel?.data?.name?.replace(email, '') || 'IT Support';
-  };
-
-  return (
-    <ChannelList
-      channelRenderFilterFn={(channels) =>
-        channels.filter((item) => item.data?.type === 'messaging')
-      }
-      filters={{ members: { $in: [uid ?? ''] } }}
-      additionalFlatListProps={{
-        scrollEnabled: false,
-        contentContainerStyle: {
-          paddingHorizontal: 20,
-        },
-      }}
-      LoadingIndicator={() => <ActivityIndicator />}
-      Preview={({ channel }: ChannelProps) => (
-        <TouchableOpacity onPress={() => onChannelSelectChannel(channel)}>
-          <FriendPreview
-            image=""
-            description="IT Support"
-            name={filterName({ channel })}
-            online
-            seenStatus="send"
-            time={new Date().getTime()}
-            unReadCount={3}
-          />
-        </TouchableOpacity>
-      )}
-      onSelect={(channel) => onChannelSelectChannel(channel)}
-    />
-  );
-};
-
 export const Search = () => {
   return (
     <View
@@ -343,24 +348,29 @@ export const Search = () => {
         paddingHorizontal: 20,
       }}
     >
-      <TouchableOpacity>
+      <Touchable>
         <View
-          backgroundColor={'$gray6'}
+          backgroundColor={'$white5'}
           style={{
             flexDirection: 'row',
             alignItems: 'center',
             justifyContent: 'space-between',
-            borderRadius: 10,
-            paddingHorizontal: 20,
-            paddingVertical: 10,
+            borderRadius: 15,
+            paddingHorizontal: 25,
+            paddingVertical: 15,
           }}
         >
-          <Text fontSize={'$4'} fontWeight={'$3'} fontFamily={'$body'}>
+          <Text
+            fontSize={'$4'}
+            fontWeight={'$6'}
+            fontFamily={'$body'}
+            color={'$gray10'}
+          >
             Search or start a message
           </Text>
-          <Icon variant="search" />
+          <Icon variant="search" color={'$gray10'} />
         </View>
-      </TouchableOpacity>
+      </Touchable>
     </View>
   );
 };
@@ -383,7 +393,7 @@ export const Title = ({
       }}
     >
       <Icon variant={icon} />
-      <Text fontSize={18} fontWeight={'$7'} fontFamily={'$body'}>
+      <Text fontSize={18} fontWeight={'$7'} fontFamily={'$heading'}>
         {title}
       </Text>
     </View>
@@ -394,14 +404,23 @@ export function Home() {
   const { mutation: signOut } = useSignOut();
   const { mutation: getUsers } = useGetUserList();
   const { mutation: createChannel } = useCreateChannel();
+  const { top } = useSafeAreaInsets();
 
   const user = useUserStore((state) => state.user);
+  const email = user?.email ?? '';
+  const uid = user?.uid ?? '';
 
+  const pinned = useUserStore((state) => state.userMetadata?.pinned ?? []);
   const setChannel = useUserStore((state) => state.setChannel);
 
-  const handleUpdateChannel = (channel: ChannelGetStreamProps) => {
+  const handleUpdateChannel = useCallback((channel: ChannelGetStreamProps) => {
+    console.log('channelUid outside');
     setChannel(channel);
-    router.push('/main/channel');
+    router.push('/channel');
+  }, []);
+
+  const handleRedirectProfile = () => {
+    router.push('/main/profile');
   };
 
   useEffect(() => {
@@ -423,7 +442,6 @@ export function Home() {
             }
           }
         }
-        console.log(data);
       }
     };
     connect();
@@ -438,69 +456,63 @@ export function Home() {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1 }}>
-      <ScrollView>
-        <View
-          style={{
-            paddingVertical: 10,
-            paddingHorizontal: 20,
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-          }}
-        >
-          <Text fontSize={30} fontWeight={'$7'} fontFamily={'$body'}>
-            Message
-          </Text>
-          <TouchableOpacity onPress={handleSignOut}>
-            <View
-              style={{
-                padding: 10,
-                width: 40,
-                height: undefined,
-                aspectRatio: 1,
-              }}
-              backgroundColor={'$gray6'}
-              borderRadius={'$5'}
-            >
-              <Icon variant="logOut" size={20} />
+    <View style={{ flex: 1, backgroundColor: '#ffffff' }}>
+      <ScrollView showsVerticalScrollIndicator={false}>
+        <View paddingTop={top}>
+          <View
+            flexDirection="row"
+            justifyContent="space-between"
+            alignItems="center"
+            style={[styles.defaultY, styles.defaultX]}
+          >
+            <Text fontSize={30} fontWeight={'$7'} fontFamily={'$heading'}>
+              Message
+            </Text>
+            <View flexDirection="row" gap={10}>
+              <IconButton
+                variant="secondary"
+                icon="setting"
+                onPress={handleRedirectProfile}
+              />
+              <IconButton icon="logOut" onPress={handleSignOut} />
             </View>
-          </TouchableOpacity>
-        </View>
-        <View>
-          <View paddingVertical={10}>
-            <UnreadChannelList
-              onChannelSelectChannel={handleUpdateChannel}
-              email={user?.email ?? ''}
-              uid={user?.uid ?? ''}
-            />
           </View>
-        </View>
-        <View>
-          <Search />
-        </View>
-        <View>
-          <Title title={'Pinned Chats'} icon="pin" />
-          <View paddingVertical={10}>
-            <PinnedChannelList
-              onChannelSelectChannel={handleUpdateChannel}
-              email={user?.email ?? ''}
-              uid={user?.uid ?? ''}
-            />
+          <View>
+            <View style={styles.defaultY}>
+              <OnlineChannelList
+                onChannelSelectChannel={handleUpdateChannel}
+                email={user?.email ?? ''}
+                uid={user?.uid ?? ''}
+              />
+            </View>
           </View>
-        </View>
-        <View>
-          <Title title={'All Chats'} icon="message-circle" />
-          <View paddingVertical={10}>
-            <FriendChannelList
-              onGoBack={handleGoBack}
-              onChannelSelectChannel={handleUpdateChannel}
-              email={user?.email ?? ''}
-              uid={user?.uid ?? ''}
-            />
+          <View style={styles.defaultY}>
+            <Search />
+          </View>
+          {pinned.length > 0 && (
+            <View>
+              <Title title={'Pinned Chats'} icon="pin" />
+              <View paddingVertical={10}>
+                <PinnedChannelList
+                  onChannelSelectChannel={handleUpdateChannel}
+                  email={user?.email ?? ''}
+                  uid={user?.uid ?? ''}
+                />
+              </View>
+            </View>
+          )}
+          <View>
+            <Title title={'All Chats'} icon="message-circle" />
+            <View backgroundColor="$white1" style={styles.defaultX}>
+              <AllMessageList
+                email={email}
+                uid={uid}
+                onSelectChannel={handleUpdateChannel}
+              />
+            </View>
           </View>
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }

@@ -2,19 +2,26 @@ import { Avatar, ChannelProps } from 'stream-chat-expo';
 import { Image, View } from 'tamagui';
 import ActiveBadge from '../ActiveBadge/ActiveBadge';
 
+type Props = {
+  name: string;
+  source: string;
+  online: boolean;
+  isHiddenIfIsActive?: boolean;
+  size?: number;
+};
 const CustomAvatar = ({
   source,
   name,
   online,
-}: {
-  name: string;
-  source: string;
-  online: boolean;
-}) => {
+  isHiddenIfIsActive = false,
+  size = 40,
+}: Props) => {
+  const borderRadius = size * 0.35;
+  const activeSize = size * 0.3;
   return (
-    <View height={40} width={40}>
+    <View height={size} width={size}>
       <Avatar
-        image={source ?? 'https://picsum.photos/300'}
+        image={source}
         ImageComponent={(props) => (
           <Image
             style={{
@@ -25,10 +32,12 @@ const CustomAvatar = ({
           />
         )}
         name={name}
-        size={40}
-        containerStyle={{ borderRadius: 12, backgroundColor: 'red' }}
+        size={size}
+        containerStyle={{ borderRadius, backgroundColor: '#eee' }}
       />
-      <ActiveBadge isActive={online} />
+      {isHiddenIfIsActive && !online ? null : (
+        <ActiveBadge isActive={online} size={activeSize} />
+      )}
     </View>
   );
 };

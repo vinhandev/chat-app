@@ -1,10 +1,25 @@
-import { Stack } from "expo-router";
+import { Stack, Tabs } from 'expo-router';
+import { Icon } from '~/components';
 
 export default function MainLayout() {
   return (
-    <Stack>
-      <Stack.Screen name="home" options={{ headerShown: false }} />
-      <Stack.Screen name="channel" options={{ headerShown: false }} />
-    </Stack>
+    <Tabs>
+      <Tabs.Screen
+        name="home"
+        options={{
+          headerShown: false,
+          tabBarLabel: 'Home',
+          tabBarIcon: ({ color }) => <Icon variant="home" color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="profile"
+        options={{
+          headerShown: false,
+          tabBarLabel: 'Profile',
+          tabBarIcon: ({ color }) => <Icon variant="profile" color={color} />,
+        }}
+      />
+    </Tabs>
   );
 }

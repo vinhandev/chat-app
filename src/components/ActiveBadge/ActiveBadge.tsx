@@ -5,19 +5,25 @@ type Props = {
   size?: number;
 };
 export default function ActiveBadge({ isActive, size = 15 }: Props) {
+  const position = -size * 0.25;
+  const padding = size * 0.2;
   return (
     <View
-      backgroundColor={isActive ? 'green' : 'gray'}
       borderRadius={1000}
-      width={size}
-      height={size}
+      backgroundColor={'$white1'}
       style={{
         position: 'absolute',
-        top: -3,
-        right: -3,
-        borderWidth: Math.round(size / 5),
-        borderColor: 'white',
+        top: position,
+        right: position,
+        padding,
       }}
-    />
+    >
+      <View
+        borderRadius={1000}
+        width={size * 0.8}
+        height={size * 0.8}
+        backgroundColor={isActive ? 'green' : 'gray'}
+      />
+    </View>
   );
 }

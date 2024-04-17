@@ -2,13 +2,22 @@ import { Text, View } from 'tamagui';
 import CustomAvatar from '../CustomAvatar/CustomAvatar';
 import { formatTimeForPreview } from '~/utils';
 import UnreadBadge from '../UnreadBadge/UnreadBadge';
+import {
+  ChannelPreviewStatus,
+  MessageReadStatus,
+  MessageStatus,
+} from 'stream-chat-expo';
+import { Icon } from '../Icon/Icon';
+import LastMessageStatus from '../LastMessageStatus/LastMessageStatus';
+import constants from '~/assets/constants';
+import styles from '~/styles';
 
 type Props = {
   image: string;
   online: boolean;
   name: string;
   description: string;
-  seenStatus: 'send' | 'received' | 'seen';
+  seenStatus: 'received' | 'sending' | 'failed' | '';
   unReadCount: number;
   time: number;
 };
@@ -25,24 +34,48 @@ export default function FriendPreview({
 
   return (
     <View
-      height={60}
+      width={'100%'}
       flexDirection="row"
-      alignItems="center"
       justifyContent="space-between"
+      style={styles.defaultY}
     >
-      <CustomAvatar name={name} source={image} online={online} />
-      <View flexGrow={1} paddingLeft="$5">
-        <Text>{name}</Text>
-        <Text>{description}</Text>
+      <CustomAvatar
+        size={60}
+        name={name}
+        source={image}
+        online={online}
+        isHiddenIfIsActive
+      />
+      <View
+        flex={1}
+        paddingHorizontal="$4"
+        paddingVertical="$2"
+        justifyContent="space-between"
+      >
+        <Text
+          fontWeight={'$7'}
+          fontSize={'$5'}
+          fontFamily={'$heading'}
+          numberOfLines={1}
+        >
+          {name}
+        </Text>
+        <Text fontWeight={'$3'} color={'$gray10'} fontSize={'$3'}>
+          {description}
+        </Text>
       </View>
-      <View alignItems="flex-end" justifyContent="flex-end">
+      <View
+        paddingVertical="$2"
+        justifyContent="space-between"
+        alignItems="flex-end"
+      >
         <Text fontSize={'$4'} fontWeight={'$3'} color={'$gray10'}>
           {formattedTime}
         </Text>
         {unReadCount > 0 ? (
-          <UnreadBadge count={unReadCount} size={25} />
+          <UnreadBadge count={unReadCount} size={20} />
         ) : (
-          <Text>{seenStatus}</Text>
+          <LastMessageStatus status={seenStatus} size={15} />
         )}
       </View>
     </View>

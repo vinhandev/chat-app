@@ -81,3 +81,5 @@ export type ChannelGetStreamProps = {
   type: 'messaging';
   updated_at: '2024-03-31T08:37:26.205916Z';
 };
+
+export type ChannelLastMessageStatusType = 'sending' | 'received' | 'failed';

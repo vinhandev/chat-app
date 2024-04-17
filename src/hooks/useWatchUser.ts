@@ -2,37 +2,47 @@ import { router } from 'expo-router';
 import { User, onAuthStateChanged } from 'firebase/auth';
 import { useState } from 'react';
 
-import { auth } from '~/services';
+import { auth, usersCollection } from '~/services';
 import { useConnectUser } from './useConnectUser';
 import { useUserStore } from '~/store';
+import { collection, doc, getDoc, getDocs } from 'firebase/firestore';
+import { UserMetadataProps } from '~/types';
 
 export function useWatchUser() {
-  const { user, setUser, initializing, setInitializing } = useUserStore(
-    (state) => {
+  const { setUser, setInitializing, setUserMetadata, setUserNames } =
+    useUserStore((state) => {
       return {
-        user: state.user,
         setUser: state.setUser,
-        initializing: state.initializing,
         setInitializing: state.setInitializing,
+        setUserNames: state.setUserNames,
+        userMetadata: state.userMetadata,
+        setUserMetadata: state.setUserMetadata,
       };
-    }
-  );
+    });
   const { mutation: connect, disconnect } = useConnectUser();
 
   const mutation = () => {
     const unsubscribe = onAuthStateChanged(auth, async (tmpUser) => {
       setInitializing(true);
-      console.log('user', user);
       try {
         if (tmpUser) {
           setUser(tmpUser);
           const token = await tmpUser.getIdToken();
           if (tmpUser.email) {
+            const firebase = await getDocs(usersCollection);
+            const userNames = firebase.docs.map((doc) => ({
+              email: doc.data().email,
+              name: doc.data().name,
+            }));
+            setUserNames(userNames);
+
+            const userStore = getDoc(doc(usersCollection, tmpUser.uid));
+            const data = (await userStore).data() as UserMetadataProps;
+            setUserMetadata(data);
             await connect(
               {
                 id: tmpUser.uid,
                 name: tmpUser.email ?? '',
-                image: tmpUser.photoURL ?? '',
               },
               token
             );
@@ -52,8 +62,5 @@ export function useWatchUser() {
     return unsubscribe;
   };
 
-  return {
-    user,
-    mutation,
-  };
+  return mutation;
 }

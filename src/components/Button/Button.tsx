@@ -1,5 +1,20 @@
-import { ButtonProps, Button as TamaguiButton } from 'tamagui';
+import { ButtonProps, Spinner, Button as TamaguiButton, View } from 'tamagui';
 
-export default function Button(props: ButtonProps) {
-  return <TamaguiButton height={60} {...props} />;
+type Props = ButtonProps & {
+  isLoading?: boolean;
+};
+export default function Button({ children, isLoading, ...props }: Props) {
+  return (
+    <TamaguiButton
+      height={60}
+      pressStyle={{ opacity: 0.8, backgroundColor: props.backgroundColor }}
+      {...props}
+    >
+      {isLoading ? (
+        <Spinner size="small" color={props.color as ''} />
+      ) : (
+        children
+      )}
+    </TamaguiButton>
+  );
 }

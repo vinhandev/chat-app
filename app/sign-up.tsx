@@ -11,22 +11,25 @@ import { useSignInGoogle, useSignInPassword, useSignUpPassword } from '~/hooks';
 export default function SignUp() {
   const { mutation } = useSignUpPassword();
 
+  const [isLoading, setLoading] = useState(false);
+
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('vinhan.dev@gmail.com');
   const [password, setPassword] = useState('123456');
   const [confirm, setConfirm] = useState('123456');
-  const handleLoginWithPassword = async () => {
+  const handleRegister = async () => {
+    setLoading(true);
     try {
       if (confirm !== password) {
         throw new Error('Passwords do not match');
       } else {
-        const response = await mutation(email, password);
-        console.log('response', response);
+        const response = await mutation(email, password, name);
       }
     } catch (error) {
       console.error(error);
     }
+    setLoading(false);
   };
-
   const handleGoBack = () => {
     if (router.canGoBack()) {
       router.back();
@@ -60,6 +63,11 @@ export default function SignUp() {
         </View>
         <View gap="$3">
           <TextInput
+            placeholder="Full name"
+            value={name}
+            onChangeText={setName}
+          />
+          <TextInput
             placeholder="Email"
             value={email}
             onChangeText={setEmail}
@@ -77,8 +85,9 @@ export default function SignUp() {
             secureTextEntry
           />
           <Button
+            isLoading={isLoading}
             marginTop="$4"
-            onPress={handleLoginWithPassword}
+            onPress={handleRegister}
             backgroundColor="$purple4Dark"
             color="$white1"
             fontWeight="$7"

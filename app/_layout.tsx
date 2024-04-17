@@ -8,26 +8,19 @@ import { useWatchUser } from '~/hooks';
 import { Stream, Tamagui, Font } from '~/providers';
 
 export default function App() {
-  const { mutation } = useWatchUser();
+  const watchUser = useWatchUser();
 
   useEffect(() => {
-    mutation();
+    return watchUser();
   }, []);
+
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <Font>
         <Tamagui>
           <Stream>
             <SafeAreaProvider style={{ flex: 1 }}>
-              <Stack>
-                <Stack.Screen
-                  name="illustration"
-                  options={{ headerShown: false }}
-                />
-                <Stack.Screen name="login" options={{ headerShown: false }} />
-                <Stack.Screen name="sign-up" options={{ headerShown: false }} />
-                <Stack.Screen name="main" options={{ headerShown: false }} />
-              </Stack>
+              <Stack screenOptions={{ headerShown: false }} />
             </SafeAreaProvider>
           </Stream>
         </Tamagui>

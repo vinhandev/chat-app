@@ -15,6 +15,16 @@ export const Font = ({ children }: { children: React.ReactNode }) => {
     'Inter-Regular': require('~/assets/fonts/Inter-Regular.ttf'),
     'Inter-SemiBold': require('~/assets/fonts/Inter-SemiBold.ttf'),
     'Inter-Thin': require('~/assets/fonts/Inter-Thin.ttf'),
+
+    'WorkSans-Black': require('~/assets/fonts/WorkSans-Black.ttf'),
+    'WorkSans-Bold': require('~/assets/fonts/WorkSans-Bold.ttf'),
+    'WorkSans-ExtraBold': require('~/assets/fonts/WorkSans-ExtraBold.ttf'),
+    'WorkSans-ExtraLight': require('~/assets/fonts/WorkSans-ExtraLight.ttf'),
+    'WorkSans-Light': require('~/assets/fonts/WorkSans-Light.ttf'),
+    'WorkSans-Medium': require('~/assets/fonts/WorkSans-Medium.ttf'),
+    'WorkSans-Regular': require('~/assets/fonts/WorkSans-Regular.ttf'),
+    'WorkSans-SemiBold': require('~/assets/fonts/WorkSans-SemiBold.ttf'),
+    'WorkSans-Thin': require('~/assets/fonts/WorkSans-Thin.ttf'),
   });
 
   const onLayoutRootView = useCallback(async () => {

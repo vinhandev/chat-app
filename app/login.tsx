@@ -7,20 +7,24 @@ import { Button } from '~/components/Button';
 import { IconButton } from '~/components/Buttons';
 import { TextInput } from '~/components/Inputs';
 import { useConnectUser, useSignInGoogle, useSignInPassword } from '~/hooks';
+import { useUserStore } from '~/store';
 
 export default function Login() {
   const { mutation } = useSignInPassword();
   const { mutation: connectUser } = useConnectUser();
 
+  const [isLoading, setLoading] = useState(false);
+
   const [email, setEmail] = useState('vinhan.dev@gmail.com');
   const [password, setPassword] = useState('123456');
   const handleLoginWithPassword = async () => {
+    setLoading(true);
     try {
-      const response = await mutation(email, password);
-      console.log('response', response);
+      await mutation(email, password);
     } catch (error) {
       console.error(error);
     }
+    setLoading(false);
   };
 
   const handleGoBack = () => {
@@ -36,13 +40,13 @@ export default function Login() {
   return (
     <View flex={1} gap="$4" paddingHorizontal="$6" paddingVertical="$4">
       <SafeAreaView style={{ flex: 1 }}>
-        <View>
+        {/* <View>
           <IconButton variant="outlined" onPress={handleGoBack}>
             <Icon variant="back" />
           </IconButton>
-        </View>
+        </View> */}
         <View
-          height={'30%'}
+          height={'40%'}
           justifyContent="center"
           alignItems="center"
           gap="$2"
@@ -67,6 +71,7 @@ export default function Login() {
             secureTextEntry
           />
           <Button
+            isLoading={isLoading}
             marginTop="$4"
             onPress={handleLoginWithPassword}
             backgroundColor="$purple4Dark"

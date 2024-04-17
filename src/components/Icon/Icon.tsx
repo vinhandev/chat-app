@@ -11,6 +11,12 @@ import {
   LogOut,
   Settings,
   MoreHorizontal,
+  CheckCheck,
+  Check,
+  MessageCircleWarning,
+  Home,
+  User,
+  Pencil,
 } from '@tamagui/lucide-icons';
 type Props =
   | ({
@@ -18,12 +24,18 @@ type Props =
     } & SvgProps)
   | ({
       variant:
+        | 'home'
+        | 'profile'
         | 'arrow-right'
         | 'back'
         | 'message-circle'
         | 'pin'
         | 'search'
         | 'setting'
+        | 'edit'
+        | 'received'
+        | 'sending'
+        | 'failed'
         | 'more'
         | 'logOut';
     } & IconProps);
@@ -36,6 +48,21 @@ export function Icon(props: Props) {
       return <GoogleIcon {...props} />;
     }
 
+    case 'edit': {
+      return <Pencil {...props} />;
+    }
+    case 'home': {
+      return <Home {...props} />;
+    }
+    case 'profile': {
+      return <User {...props} />;
+    }
+    case 'arrow-right': {
+      return <MoveRight {...props} />;
+    }
+    case 'arrow-right': {
+      return <MoveRight {...props} />;
+    }
     case 'arrow-right': {
       return <MoveRight {...props} />;
     }
@@ -59,6 +86,15 @@ export function Icon(props: Props) {
     }
     case 'more': {
       return <MoreHorizontal {...props} />;
+    }
+    case 'failed': {
+      return <MessageCircleWarning {...props} />;
+    }
+    case 'received': {
+      return <CheckCheck {...props} />;
+    }
+    case 'sending': {
+      return <Check {...props} />;
     }
 
     default:

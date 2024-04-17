@@ -6,6 +6,7 @@ import {
 import { auth } from '~/services';
 
 export const useSignOut = () => {
+  
   const mutation = async () => {
     const response = await signOut(auth);
 
