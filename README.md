@@ -1,4 +1,5 @@
 # Chat and pinned your message with GetStream
+<img src="./screenshots/header.png" width=100%>
 
 This is a React Chat App, help your chat with your friends. Using GetStream for the chat
 Additional features:
