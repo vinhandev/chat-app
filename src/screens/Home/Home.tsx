@@ -1,5 +1,10 @@
-import { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, Dimensions, TouchableOpacity } from 'react-native';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import {
+  ActivityIndicator,
+  Dimensions,
+  TextInput,
+  TouchableOpacity,
+} from 'react-native';
 import {
   SafeAreaView,
   useSafeAreaInsets,
@@ -37,6 +42,7 @@ import {
   IconButton,
   IconVariantProps,
   LastMessageStatus,
+  SearchChannel,
   Touchable,
 } from '~/components';
 import { router } from 'expo-router';
@@ -401,6 +407,10 @@ export const Title = ({
 };
 
 export function Home() {
+  const searchRef = useRef<TextInput>();
+  const [isFocusedSearch, setIsFocusedSearch] = useState(false);
+  const [searchValue, setSearchValue] = useState('');
+
   const { mutation: signOut } = useSignOut();
   const { mutation: getUsers } = useGetUserList();
   const { mutation: createChannel } = useCreateChannel();
@@ -421,6 +431,11 @@ export function Home() {
 
   const handleRedirectProfile = () => {
     router.push('/main/profile');
+  };
+
+  const onBlurSearch = () => {
+    searchRef?.current?.blur();
+    setIsFocusedSearch(false);
   };
 
   useEffect(() => {
@@ -451,14 +466,10 @@ export function Home() {
     await signOut();
   };
 
-  const handleGoBack = () => {
-    setChannel(null);
-  };
-
   return (
     <View style={{ flex: 1, backgroundColor: '#ffffff' }}>
       <ScrollView showsVerticalScrollIndicator={false}>
-        <View paddingTop={top}>
+        <View paddingTop={top} onPress={onBlurSearch}>
           <View
             flexDirection="row"
             justifyContent="space-between"
@@ -477,19 +488,27 @@ export function Home() {
               <IconButton icon="logOut" onPress={handleSignOut} />
             </View>
           </View>
-          <View>
-            <View style={styles.defaultY}>
-              <OnlineChannelList
-                onChannelSelectChannel={handleUpdateChannel}
-                email={user?.email ?? ''}
-                uid={user?.uid ?? ''}
-              />
+          {!isFocusedSearch ? (
+            <View>
+              <View style={styles.defaultY}>
+                <OnlineChannelList
+                  onChannelSelectChannel={handleUpdateChannel}
+                  email={user?.email ?? ''}
+                  uid={user?.uid ?? ''}
+                />
+              </View>
             </View>
-          </View>
+          ) : null}
           <View style={styles.defaultY}>
-            <Search />
+            <SearchChannel
+              ref={searchRef}
+              isFocused={isFocusedSearch}
+              setFocused={setIsFocusedSearch}
+              searchValue={searchValue}
+              setSearchValue={setSearchValue}
+            />
           </View>
-          {pinned.length > 0 && (
+          {!isFocusedSearch && pinned.length > 0 && (
             <View>
               <Title title={'Pinned Chats'} icon="pin" />
               <View paddingVertical={10}>
@@ -501,13 +520,14 @@ export function Home() {
               </View>
             </View>
           )}
-          <View>
+          <View onPress={onBlurSearch}>
             <Title title={'All Chats'} icon="message-circle" />
             <View backgroundColor="$white1" style={styles.defaultX}>
               <AllMessageList
                 email={email}
                 uid={uid}
                 onSelectChannel={handleUpdateChannel}
+                searchValue={searchValue}
               />
             </View>
           </View>

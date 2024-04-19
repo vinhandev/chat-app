@@ -18,6 +18,7 @@ import {
   User,
   Pencil,
 } from '@tamagui/lucide-icons';
+import { View, ViewProps } from 'tamagui';
 type Props =
   | ({
       variant: 'google';
@@ -42,7 +43,7 @@ type Props =
 
 export type IconVariantProps = Props['variant'];
 
-export function Icon(props: Props) {
+export const IconItem = (props: Props) => {
   switch (props.variant) {
     case 'google': {
       return <GoogleIcon {...props} />;
@@ -100,4 +101,17 @@ export function Icon(props: Props) {
     default:
       break;
   }
+};
+
+export function Icon({
+  containerProps,
+  ...props
+}: Props & {
+  containerProps?: ViewProps;
+}) {
+  return (
+    <View {...containerProps}>
+      <IconItem {...props} />
+    </View>
+  );
 }

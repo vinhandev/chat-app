@@ -14,20 +14,23 @@ import styles from '~/styles';
 type Props = {
   uid: string;
   email: string;
+  searchValue: string;
   onSelectChannel: (channel: any) => void;
 };
-const Component = ({ uid, email, onSelectChannel }: Props) => {
+const Component = ({ uid, email, searchValue, onSelectChannel }: Props) => {
   const getChannelInformation = useGetChannelInformation();
+  console.log('searchValue', searchValue);
 
   if (uid === '') return null;
   return (
     <View
       style={{
         background: 'grey',
-        minHeight: 200,
+        flex: 1,
       }}
     >
       <ChannelList
+        key={searchValue}
         filters={{ members: { $in: [uid ?? ''] } }}
         additionalFlatListProps={{
           scrollEnabled: false,
@@ -44,14 +47,22 @@ const Component = ({ uid, email, onSelectChannel }: Props) => {
             image,
           } = getChannelInformation({ channel, email, uid });
 
-          console.log('image', image);
-
           const handleSelectChannel = () => {
             if (onSelectChannel !== undefined) {
               onSelectChannel(channel);
             }
           };
 
+          console.log('?', searchValue);
+
+          if (
+            !name
+              .trim()
+              .toLowerCase()
+              .includes(searchValue.trim().toLowerCase())
+          ) {
+            return null;
+          }
           return (
             <Touchable onPress={handleSelectChannel}>
               <FriendPreview
