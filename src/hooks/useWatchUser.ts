@@ -7,6 +7,7 @@ import { useConnectUser } from './useConnectUser';
 import { useUserStore } from '~/store';
 import { collection, doc, getDoc, getDocs } from 'firebase/firestore';
 import { UserMetadataProps } from '~/types';
+import { sleep } from '~/utils';
 
 export function useWatchUser() {
   const { setUser, setInitializing, setUserMetadata, setUserNames } =
@@ -24,6 +25,7 @@ export function useWatchUser() {
   const mutation = () => {
     const unsubscribe = onAuthStateChanged(auth, async (tmpUser) => {
       setInitializing(true);
+      sleep(1000);
       try {
         if (tmpUser) {
           setUser(tmpUser);

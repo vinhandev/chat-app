@@ -12,15 +12,23 @@ import { useUserStore } from '~/store';
 import styles from '~/styles';
 import { UserMetadataProps } from '~/types';
 import * as ImagePicker from 'expo-image-picker';
-import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
+import {
+  getDownloadURL,
+  ref,
+  uploadBytes,
+  uploadBytesResumable,
+} from 'firebase/storage';
 
 export default function Profile() {
-  const [isLoading, setLoading] = useState(false);
+  const [isLoading, setLoading] = useState<
+    'name' | 'camera' | 'library' | false
+  >(false);
+  const isLoadingName = isLoading === 'name';
+  const isLoadingCamera = isLoading === 'camera';
+  const isLoadingLibrary = isLoading === 'library';
   const [visible, setVisible] = useState(false);
   const [visibleCamera, setVisibleCamera] = useState(false);
   const [changedName, setChangedName] = useState('');
-  const { getNameByString } = useGetNameForUser();
-  console.log(client.user);
   const profileAvatar = (client.user?.image as string) ?? '';
   const userMetadata = useUserStore((state) => state.userMetadata);
   const name = userMetadata?.name ?? '';
@@ -55,7 +63,30 @@ export default function Profile() {
     await disconnect();
   };
 
-  const openCamera = async () => {
+  const handleUploadImage = async (
+    name: string | null | undefined,
+    uri: string | undefined
+  ) => {
+    if (uri && name) {
+      const data = await fetch(uri.replace('file:///', 'file:/'));
+
+      const blob = await data.blob();
+
+      const refImage = ref(storage, name);
+
+      await uploadBytesResumable(refImage, blob);
+
+      const url = await getDownloadURL(refImage);
+
+      await disconnect();
+      await handleConnectWithImage(url);
+    } else {
+      Alert.alert('No image selected');
+    }
+  };
+
+  const handleChangeImageByCamera = async () => {
+    setLoading('camera');
     try {
       const isGranted = status?.granted;
       if (isGranted) {
@@ -68,31 +99,18 @@ export default function Profile() {
         quality: 1,
       });
       const uri = result.assets?.[0].uri;
-      if (!uri) return;
-
-      const data = await fetch(uri.replace('file:///', 'file:/'));
-      console.log(data);
-
-      const blob = await data.blob();
-
-      const time = new Date().getTime();
-      const imageName = `images/${time.toString()}.jpg`;
-      console.log('???', imageName);
-      const refImage = ref(storage, imageName);
-      await uploadBytes(refImage, blob);
-
-      const url = await getDownloadURL(refImage);
-
-      await disconnect();
-      await handleConnectWithImage(url);
+      const fileName = result.assets?.[0].fileName;
+      await handleUploadImage(fileName, uri);
 
       setVisibleCamera(false);
     } catch (error) {
       Alert.alert((error as Error).message);
     }
+    setLoading(false);
   };
 
-  const openGallery = async () => {
+  const handleChangeImageByLibrary = async () => {
+    setLoading('library');
     try {
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.All,
@@ -101,32 +119,18 @@ export default function Profile() {
         quality: 1,
       });
       const uri = result.assets?.[0].uri;
-      if (!uri) return;
-
-      const data = await fetch(uri.replace('file:///', 'file:/'));
-      console.log(data);
-
-      const blob = await data.blob();
-
-      const time = new Date().getTime();
-      const name = `images/${time.toString()}.jpg`;
-      console.log('???', name);
-      const refImage = ref(storage, name);
-      await uploadBytes(refImage, blob);
-
-      const url = await getDownloadURL(refImage);
-
-      await disconnect();
-      await handleConnectWithImage(url);
+      const fileName = result.assets?.[0].uri.split('/').pop();
+      await handleUploadImage(fileName, uri);
 
       setVisibleCamera(false);
     } catch (error) {
       Alert.alert((error as Error).message);
     }
+    setLoading(false);
   };
 
   const handleChangeName = async () => {
-    setLoading(true);
+    setLoading('name');
     try {
       if (changedName !== '') {
         const param: Partial<UserMetadataProps> = {
@@ -240,7 +244,7 @@ export default function Profile() {
               onChangeText={setChangedName}
             />
             <Button
-              isLoading={isLoading}
+              isLoading={isLoadingName}
               onPress={handleChangeName}
               marginTop="$4"
               backgroundColor="$purple4Dark"
@@ -277,7 +281,8 @@ export default function Profile() {
 
             <View>
               <Button
-                onPress={openCamera}
+                isLoading={isLoadingCamera}
+                onPress={handleChangeImageByCamera}
                 marginTop="$2"
                 backgroundColor="$purple4Dark"
                 color="$white1"
@@ -286,7 +291,8 @@ export default function Profile() {
                 Take a picture
               </Button>
               <Button
-                onPress={openGallery}
+                isLoading={isLoadingLibrary}
+                onPress={handleChangeImageByLibrary}
                 marginTop="$2"
                 backgroundColor="$gray6"
                 color="$black1"

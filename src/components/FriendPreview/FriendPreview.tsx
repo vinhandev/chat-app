@@ -35,8 +35,10 @@ export default function FriendPreview({
   return (
     <View
       width={'100%'}
+      minHeight={10}
       flexDirection="row"
       justifyContent="space-between"
+      backgroundColor={'white'}
       style={styles.defaultY}
     >
       <CustomAvatar

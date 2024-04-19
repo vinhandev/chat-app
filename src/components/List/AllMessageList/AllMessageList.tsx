@@ -21,47 +21,53 @@ const Component = ({ uid, email, onSelectChannel }: Props) => {
 
   if (uid === '') return null;
   return (
-    <ChannelList
-      filters={{ members: { $in: [uid ?? ''] } }}
-      additionalFlatListProps={{
-        scrollEnabled: false,
+    <View
+      style={{
+        background: 'grey',
+        minHeight: 200,
       }}
-      LoadingIndicator={LoadingListSpinner}
-      Preview={({ channel }) => {
-        const {
-          channelUid,
-          description,
-          name,
-          online,
-          status,
-          time,
-          unReadCount,
-          image,
-        } = getChannelInformation({ channel, email, uid });
+    >
+      <ChannelList
+        filters={{ members: { $in: [uid ?? ''] } }}
+        additionalFlatListProps={{
+          scrollEnabled: false,
+        }}
+        LoadingIndicator={LoadingListSpinner}
+        Preview={({ channel }) => {
+          const {
+            description,
+            name,
+            online,
+            status,
+            time,
+            unReadCount,
+            image,
+          } = getChannelInformation({ channel, email, uid });
 
-        console.log('image', image);
+          console.log('image', image);
 
-        const handleSelectChannel = () => {
-          if (onSelectChannel !== undefined) {
-            onSelectChannel(channel);
-          }
-        };
+          const handleSelectChannel = () => {
+            if (onSelectChannel !== undefined) {
+              onSelectChannel(channel);
+            }
+          };
 
-        return (
-          <Touchable onPress={handleSelectChannel}>
-            <FriendPreview
-              image={image}
-              description={description}
-              name={name}
-              online={online}
-              seenStatus={status}
-              time={time}
-              unReadCount={unReadCount}
-            />
-          </Touchable>
-        );
-      }}
-    />
+          return (
+            <Touchable onPress={handleSelectChannel}>
+              <FriendPreview
+                image={image}
+                description={description}
+                name={name}
+                online={online}
+                seenStatus={status}
+                time={time}
+                unReadCount={unReadCount}
+              />
+            </Touchable>
+          );
+        }}
+      />
+    </View>
   );
 };
 
