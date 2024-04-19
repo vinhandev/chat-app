@@ -24,6 +24,7 @@ export default function Profile() {
   const profileAvatar = (client.user?.image as string) ?? '';
   const userMetadata = useUserStore((state) => state.userMetadata);
   const name = userMetadata?.name ?? '';
+  const email = userMetadata?.email ?? '';
   const setUserMetadata = useUserStore((state) => state.setUserMetadata);
   const uid = useUserStore((state) => state.user?.uid ?? '');
   const { mutation: connect, disconnect } = useConnectUser();
@@ -38,6 +39,17 @@ export default function Profile() {
     setVisibleCamera(true);
   };
 
+  async function handleConnectWithImage(url: string) {
+    await connect(
+      {
+        id: uid,
+        name: email ?? '',
+        image: url,
+      },
+      ''
+    );
+  }
+
   const handleSignOut = async () => {
     await signOut();
     await disconnect();
@@ -45,7 +57,8 @@ export default function Profile() {
 
   const openCamera = async () => {
     try {
-      if (status !== ImagePicker.PermissionStatus.GRANTED) {
+      const isGranted = status?.granted;
+      if (isGranted) {
         await requestPermission();
       }
       const result = await ImagePicker.launchCameraAsync({
@@ -63,22 +76,15 @@ export default function Profile() {
       const blob = await data.blob();
 
       const time = new Date().getTime();
-      const name = `images/${time.toString()}.jpg`;
-      console.log('???', name);
-      const refImage = ref(storage, name);
+      const imageName = `images/${time.toString()}.jpg`;
+      console.log('???', imageName);
+      const refImage = ref(storage, imageName);
       await uploadBytes(refImage, blob);
 
       const url = await getDownloadURL(refImage);
 
       await disconnect();
-      await connect(
-        {
-          id: uid,
-          name: name ?? '',
-          image: url,
-        },
-        ''
-      );
+      await handleConnectWithImage(url);
 
       setVisibleCamera(false);
     } catch (error) {
@@ -111,14 +117,7 @@ export default function Profile() {
       const url = await getDownloadURL(refImage);
 
       await disconnect();
-      await connect(
-        {
-          id: uid,
-          name: name ?? '',
-          image: url,
-        },
-        ''
-      );
+      await handleConnectWithImage(url);
 
       setVisibleCamera(false);
     } catch (error) {

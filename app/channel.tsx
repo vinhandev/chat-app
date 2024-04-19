@@ -84,9 +84,9 @@ export default function Channel() {
         >
           <BlurView
             style={{
-              alignItems: 'center',
               justifyContent: 'space-between',
               flexDirection: 'row',
+              gap: 10,
 
               paddingHorizontal: 10,
               paddingTop: top + 20,
@@ -106,8 +106,14 @@ export default function Channel() {
             tint="light"
           >
             <CustomAvatar name={name} online={online} source={image} />
-            <View style={{ flexGrow: 1, paddingHorizontal: 10 }}>
-              <Text fontWeight={'$7'} fontSize={'$4'} fontFamily={'$body'}>
+            <View style={{ flex: 1 }}>
+              <Text
+                wordWrap="break-word"
+                textBreakStrategy="balanced"
+                fontWeight={'$7'}
+                fontSize={'$4'}
+                fontFamily={'$body'}
+              >
                 {name}
               </Text>
               <Text
