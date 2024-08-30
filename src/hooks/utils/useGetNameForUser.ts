@@ -1,19 +1,22 @@
 import { ChannelProps } from 'stream-chat-expo';
-import { useUserStore } from '~/store';
+import { useAppSelector } from '~/store/hooks';
+import {
+  selectMetadata,
+  selectUser,
+  selectUserNameList,
+} from '~/store/reducers';
 
 type Props = ChannelProps;
 export function useGetNameForUser() {
-  const nickNames = useUserStore(
-    (state) => state.userMetadata?.nickNames ?? []
-  );
-  const userNames = useUserStore((state) => state.userNames);
-  const email = useUserStore((state) => state.user?.email);
+  const nickNames = useAppSelector(selectMetadata)?.nickNames ?? [];
+  const userNames = useAppSelector(selectUserNameList) ?? [];
+  const email = useAppSelector(selectUser)?.email ?? '';
 
   const handleFilterNameInChannel = ({ channel }: Props) => {
     const channelName = channel?.data?.name ?? '';
     if (!email) return channelName;
     const orgName = channelName.replace(email, '') || 'IT Support';
-   return handleFilterName(orgName);
+    return handleFilterName(orgName);
   };
 
   const handleFilterName = (paramName: string) => {

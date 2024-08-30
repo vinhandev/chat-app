@@ -3,9 +3,9 @@ import { useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Text, View } from 'tamagui';
 import { Icon, Image } from '~/components';
-import { Button } from '~/components/Button';
-import { IconButton } from '~/components/Buttons';
-import { TextInput } from '~/components/Inputs';
+import { Button } from '~/components/atoms/Button';
+import { IconButton } from '~/components/atoms/Buttons';
+import { TextInput } from '~/components/atoms/Inputs';
 import { useSignInGoogle, useSignInPassword, useSignUpPassword } from '~/hooks';
 
 export default function SignUp() {

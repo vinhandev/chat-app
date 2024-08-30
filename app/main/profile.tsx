@@ -5,10 +5,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Image, Sheet, Text, View } from 'tamagui';
 import constants from '~/assets/constants';
 import { Button, Icon, Touchable } from '~/components';
-import { TextInput } from '~/components/Inputs';
+import { TextInput } from '~/components/atoms/Inputs';
 import { useConnectUser, useGetNameForUser, useSignOut } from '~/hooks';
 import { client, storage, usersCollection } from '~/services';
-import { useUserStore } from '~/store';
 import styles from '~/styles';
 import { UserMetadataProps } from '~/types';
 import * as ImagePicker from 'expo-image-picker';
@@ -18,6 +17,8 @@ import {
   uploadBytes,
   uploadBytesResumable,
 } from 'firebase/storage';
+import { useAppDispatch, useAppSelector } from '~/store/hooks';
+import { selectMetadata, selectUser, updateMetadata } from '~/store/reducers';
 
 export default function Profile() {
   const [isLoading, setLoading] = useState<
@@ -30,11 +31,11 @@ export default function Profile() {
   const [visibleCamera, setVisibleCamera] = useState(false);
   const [changedName, setChangedName] = useState('');
   const profileAvatar = (client.user?.image as string) ?? '';
-  const userMetadata = useUserStore((state) => state.userMetadata);
+  const userMetadata = useAppSelector(selectMetadata);
   const name = userMetadata?.name ?? '';
   const email = userMetadata?.email ?? '';
-  const setUserMetadata = useUserStore((state) => state.setUserMetadata);
-  const uid = useUserStore((state) => state.user?.uid ?? '');
+  const dispatch = useAppDispatch();
+  const uid = useAppSelector(selectUser)?.uid;
   const { mutation: connect, disconnect } = useConnectUser();
   const [status, requestPermission] = ImagePicker.useCameraPermissions();
   const { mutation: signOut } = useSignOut();
@@ -50,7 +51,7 @@ export default function Profile() {
   async function handleConnectWithImage(url: string) {
     await connect(
       {
-        id: uid,
+        id: uid ?? '',
         name: email ?? '',
         image: url,
       },
@@ -137,7 +138,7 @@ export default function Profile() {
           ...userMetadata,
           name: changedName,
         };
-        setUserMetadata(param as UserMetadataProps);
+        dispatch(updateMetadata(param));
         await updateDoc(doc(usersCollection, uid), param);
         setVisible(false);
       } else {

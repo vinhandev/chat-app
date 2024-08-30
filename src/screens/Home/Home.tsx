@@ -5,38 +5,18 @@ import {
   TextInput,
   TouchableOpacity,
 } from 'react-native';
-import {
-  SafeAreaView,
-  useSafeAreaInsets,
-} from 'react-native-safe-area-context';
-import {
-  Avatar,
-  Channel,
-  ChannelList,
-  ChannelProps,
-  MessageInput,
-  MessageList,
-  Skeleton,
-  useCreateThreadContext,
-} from 'stream-chat-expo';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Avatar, ChannelList, ChannelProps } from 'stream-chat-expo';
 import { Image, ScrollView, Text, View } from 'tamagui';
-import FriendPreview from '~/components/FriendPreview/FriendPreview';
 import {
-  useConnectUser,
   useCreateChannel,
   useGetChannelInformation,
-  useGetNameForUser,
-  useGetOnlineStatusForUser,
-  useGetUid,
   useGetUserList,
   useSignOut,
 } from '~/hooks';
-import { client } from '~/services';
-import { useUserStore } from '~/store';
-import { UserProps } from '~/types';
 import { LinearGradient } from 'expo-linear-gradient';
-import UnreadBadge from '~/components/UnreadBadge/UnreadBadge';
-import ActiveBadge from '~/components/ActiveBadge/ActiveBadge';
+import UnreadBadge from '~/components/atoms/UnreadBadge/UnreadBadge';
+import ActiveBadge from '~/components/atoms/ActiveBadge/ActiveBadge';
 import {
   Icon,
   IconButton,
@@ -46,12 +26,11 @@ import {
   Touchable,
 } from '~/components';
 import { router } from 'expo-router';
-import {
-  ChannelGetStreamProps,
-  ChannelLastMessageStatusType,
-} from '~/types/channels';
-import { AllMessageList } from '~/components/List';
+import { ChannelGetStreamProps } from '~/types/channels';
+import { AllMessageList } from '~/components/atoms/List';
 import styles from '~/styles';
+import { selectMetadata, selectUser, updateChannel } from '~/store/reducers';
+import { useAppDispatch, useAppSelector } from '~/store/hooks';
 
 export const OnlineChannelList = ({
   onChannelSelectChannel,
@@ -190,7 +169,7 @@ export const PinnedChannelList = ({
 }) => {
   const getInformation = useGetChannelInformation();
 
-  const pinned = useUserStore((state) => state.userMetadata?.pinned ?? []);
+  const pinned = useAppSelector(selectMetadata)?.pinned ?? [];
 
   return (
     <View style={{ paddingLeft: 10 }}>
@@ -416,16 +395,16 @@ export function Home() {
   const { mutation: createChannel } = useCreateChannel();
   const { top } = useSafeAreaInsets();
 
-  const user = useUserStore((state) => state.user);
+  const user = useAppSelector(selectUser);
   const email = user?.email ?? '';
   const uid = user?.uid ?? '';
 
-  const pinned = useUserStore((state) => state.userMetadata?.pinned ?? []);
-  const setChannel = useUserStore((state) => state.setChannel);
+  const pinned = useAppSelector(selectMetadata)?.pinned ?? [];
+  const dispatch = useAppDispatch();
 
   const handleUpdateChannel = useCallback((channel: ChannelGetStreamProps) => {
     console.log('channelUid outside');
-    setChannel(channel);
+    dispatch(updateChannel(channel));
     router.push('/channel');
   }, []);
 

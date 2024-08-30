@@ -1,5 +1,4 @@
 import { Text, View } from 'tamagui';
-import { useUserStore } from '~/store';
 
 import {
   MessageInput,
@@ -23,14 +22,21 @@ import { doc, updateDoc } from 'firebase/firestore';
 import { UserMetadataProps } from '~/types';
 import { Alert } from 'react-native';
 import { useState } from 'react';
+import { useAppDispatch, useAppSelector } from '~/store/hooks';
+import {
+  selectChannel,
+  selectMetadata,
+  selectUser,
+  updateMetadata,
+} from '~/store/reducers';
 
 export default function Channel() {
-  const uid = useUserStore((state) => state.user?.uid ?? '');
-  const userMetadata = useUserStore((state) => state.userMetadata);
-  const setMetadata = useUserStore((state) => state.setUserMetadata);
-  const pinned = useUserStore((state) => state.userMetadata?.pinned ?? []);
+  const dispatch = useAppDispatch();
+  const uid = useAppSelector(selectUser)?.uid ?? '';
+  const userMetadata = useAppSelector(selectMetadata);
+  const pinned = userMetadata?.pinned ?? [];
   const { top, bottom } = useSafeAreaInsets();
-  const channel = useUserStore((state) => state.channel) as any;
+  const channel = useAppSelector(selectChannel) as any;
   const { getName } = useGetNameForUser();
   const { getOnline } = useGetOnlineStatusForUser();
   const { getUid } = useGetUid();
@@ -63,7 +69,7 @@ export default function Channel() {
       }
 
       await updateDoc(doc(usersCollection, uid), param);
-      setMetadata(param as UserMetadataProps);
+      dispatch(updateMetadata(param as UserMetadataProps));
     } catch (error) {
       Alert.alert((error as Error).message);
     }

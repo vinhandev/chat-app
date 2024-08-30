@@ -1,10 +1,11 @@
 import { client } from '~/services';
-import { useUserStore } from '~/store';
+import { useAppSelector } from '~/store/hooks';
+import { selectUser } from '~/store/reducers';
 import { UserProps } from '~/types';
 import { ChannelProps } from '~/types/channels';
 
 export const useGetUserList = () => {
-  const user = useUserStore((state) => state.user);
+  const user = useAppSelector(selectUser);
   async function mutation() {
     if (user) {
       const response = await client.queryUsers({});

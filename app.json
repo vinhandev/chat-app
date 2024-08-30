@@ -13,7 +13,9 @@
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
-    "assetBundlePatterns": ["**/*"],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
       "supportsTablet": true
     },
@@ -21,7 +23,12 @@
       "adaptiveIcon": {
         "foregroundImage": "./src/assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "permissions": [
+        "android.permission.RECORD_AUDIO",
+        "android.permission.CAMERA"
+      ],
+      "package": "com.vinhandev.chatapp"
     },
     "web": {
       "favicon": "./src/assets/images/favicon.png"
@@ -33,7 +40,7 @@
         {
           "cameraPermission": "Allow $(PRODUCT_NAME) to access your camera",
           "photosPermission": "The app accesses your photos to let you share them with your friends.",
-          "microphonePermission": "Allow $(PRODUCT_NAME) to access your microphone",
+          "microphonePermission": "Allow $(PRODUCT_NAME) to access your microphone"
         }
       ],
       [
@@ -44,6 +51,14 @@
           "recordAudioAndroid": true
         }
       ]
-    ]
+    ],
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "202b7a8c-fb37-4c5d-9466-effef5192279"
+      }
+    }
   }
 }

@@ -5,13 +5,14 @@ import { Text, View } from 'tamagui';
 import { useSignInGoogle } from '~/hooks';
 
 import { Icon, Image } from '~/components';
-import { IconButton } from '~/components/Buttons';
-import { useUserStore } from '~/store';
+import { IconButton } from '~/components/atoms/Buttons';
 import { ActivityIndicator } from 'react-native';
+import { useAppSelector } from '~/store/hooks';
+import { selectInitializing } from '~/store/reducers';
 
 export default function Illustration() {
   const { mutation } = useSignInGoogle();
-  const initializing = useUserStore((state) => state.initializing);
+  const initializing = useAppSelector(selectInitializing);
   const handleRedirectLoginWithPasswordScreen = () => {
     router.push('/login');
   };

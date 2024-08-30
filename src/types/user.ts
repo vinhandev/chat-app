@@ -12,3 +12,8 @@ export type UserMetadataProps = {
   nickNames: { email: string; name: string }[];
   pinned: string[];
 };
+
+export type UserNamePayload = {
+  email: string;
+  name: string;
+};
